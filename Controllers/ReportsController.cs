@@ -19,7 +19,7 @@ namespace SystemZarzadzaniaFinansami.Controllers
             _context = context;
         }
 
-        // GET: Reports1/Index
+        // GET: Reports/Index
         public IActionResult Index()
         {
             var categories = _context.Categories.ToList();
@@ -27,9 +27,9 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View("~/Views/Reports1/Index.cshtml");
         }
 
-        // POST: Reports1/GenerateReport
+        // POST: Reports/GenerateReport
         [HttpPost]
-        public async Task<IActionResult> GenerateReport(DateTime? startDate, DateTime? endDate, string reportType)
+        public async Task<IActionResult> GenerateReport(DateTime? startDate, DateTime? endDate, string reportType, int? categoryId)
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
@@ -44,27 +44,32 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 endDate = DateTime.Now;
             }
 
-            var incomes = Enumerable.Empty<Income>();
-            var expenses = Enumerable.Empty<Expense>();
+            // Filtrowanie raportu na podstawie wybranego typu
+            var incomes = _context.Incomes.AsQueryable();
+            var expenses = _context.Expenses.AsQueryable();
 
+            // Filtrowanie po typie raportu
             if (reportType == "all" || reportType == "incomes")
             {
-                incomes = await _context.Incomes
+                incomes = incomes
                     .Where(i => i.UserId == userId && i.Date >= startDate && i.Date <= endDate)
-                    .Include(i => i.Category)
-                    .ToListAsync();
+                    .Where(i => !categoryId.HasValue || i.CategoryId == categoryId) // Filtr po kategorii
+                    .Include(i => i.Category);
             }
 
             if (reportType == "all" || reportType == "expenses")
             {
-                expenses = await _context.Expenses
+                expenses = expenses
                     .Where(e => e.UserId == userId && e.Date >= startDate && e.Date <= endDate)
-                    .Include(e => e.Category)
-                    .ToListAsync();
+                    .Where(e => !categoryId.HasValue || e.CategoryId == categoryId) // Filtr po kategorii
+                    .Include(e => e.Category);
             }
 
-            var incomeTotal = incomes.Sum(i => i.Amount);
-            var expenseTotal = expenses.Sum(e => e.Amount);
+            var incomeList = await incomes.ToListAsync();
+            var expenseList = await expenses.ToListAsync();
+
+            var incomeTotal = incomeList.Sum(i => i.Amount);
+            var expenseTotal = expenseList.Sum(e => e.Amount);
             var balance = incomeTotal - expenseTotal;
 
             var report = new
@@ -72,11 +77,12 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 StartDate = startDate.Value.ToString("yyyy-MM-dd"),
                 EndDate = endDate.Value.ToString("yyyy-MM-dd"),
                 ReportType = reportType,
-                Incomes = incomes,
-                Expenses = expenses,
+                Incomes = incomeList,
+                Expenses = expenseList,
                 IncomeTotal = incomeTotal,
                 ExpenseTotal = expenseTotal,
-                Balance = balance
+                Balance = balance,
+                SelectedCategory = categoryId.HasValue ? _context.Categories.Find(categoryId).Name : "Wszystkie kategorie"
             };
 
             return View("~/Views/Reports1/Report.cshtml", report);

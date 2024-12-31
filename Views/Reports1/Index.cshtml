@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Raporty";
+    ViewData["Title"] = "Generowanie raportu";
 }
 
 <h1>Generowanie Raportu</h1>
@@ -13,6 +13,27 @@
         <label for="endDate">Data końcowa:</label>
         <input type="date" id="endDate" name="endDate" class="form-control" />
     </div>
+
+    <div class="form-group">
+        <label for="categoryId">Wybierz kategorię:</label>
+        <select id="categoryId" name="categoryId" class="form-control">
+            <option value="">Wszystkie kategorie</option>
+            @foreach (var category in ViewBag.Categories)
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="reportType">Typ raportu:</label>
+        <select id="reportType" name="reportType" class="form-control">
+            <option value="all">Wszystkie</option>
+            <option value="incomes">Przychody</option>
+            <option value="expenses">Wydatki</option>
+        </select>
+    </div>
+
     <div class="form-group">
         <button type="submit" class="btn btn-primary">Generuj Raport</button>
     </div>

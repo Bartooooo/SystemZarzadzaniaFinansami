@@ -8,6 +8,62 @@
     <p>Przychody: @Model.IncomeTotal zł</p>
     <p>Wydatki: @Model.ExpenseTotal zł</p>
     <p>Bilans: @Model.Balance zł</p>
+
+    <h3>Przychody:</h3>
+    @if (Model.Incomes.Count > 0)
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Kategoria</th>
+                    <th>Kwota</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var income in Model.Incomes)
+                {
+                    <tr>
+                        <td>@income.Category.Name</td>
+                        <td>@income.Amount</td>
+                        <td>@income.Date.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>Brak przychodów w tym okresie.</p>
+    }
+
+    <h3>Wydatki:</h3>
+    @if (Model.Expenses.Count > 0)
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Kategoria</th>
+                    <th>Kwota</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var expense in Model.Expenses)
+                {
+                    <tr>
+                        <td>@expense.Category.Name</td>
+                        <td>@expense.Amount</td>
+                        <td>@expense.Date.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>Brak wydatków w tym okresie.</p>
+    }
 }
 else
 {
