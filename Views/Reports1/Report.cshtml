@@ -1,0 +1,15 @@
+﻿@model dynamic
+
+<h1>Raport finansowy</h1>
+
+@if (Model != null)
+{
+    <p>Okres: @Model.StartDate - @Model.EndDate</p>
+    <p>Przychody: @Model.IncomeTotal zł</p>
+    <p>Wydatki: @Model.ExpenseTotal zł</p>
+    <p>Bilans: @Model.Balance zł</p>
+}
+else
+{
+    <p>Brak danych do wyświetlenia.</p>
+}
