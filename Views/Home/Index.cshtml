@@ -1,4 +1,6 @@
-﻿@{
+﻿@model dynamic
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -13,8 +15,37 @@
         <a asp-controller="Expenses" asp-action="Create" class="btn btn-secondary">Dodaj Wydatki</a>
         <a asp-controller="Categories" asp-action="Index" class="btn btn-warning">Zarządzaj Kategoriami</a>
         <a asp-controller="Reports" asp-action="Index" class="btn btn-info">Raporty</a>
+    </div>
 
+    <hr />
 
+    <!-- Podsumowanie finansowe -->
+    <h2>Podsumowanie finansowe</h2>
+    <div class="summary">
+        <div class="summary-item">
+            <span>@Model.CurrentMonth:</span>
+        </div>
+        <div class="summary-item">
+            <strong>Przychody:</strong>
+            <span>@Model.Incomes zł</span>
+        </div>
+        <div class="summary-item">
+            <strong>Wydatki:</strong>
+            <span>@Model.Expenses zł</span>
+        </div>
+        <div class="summary-item">
+            <strong>Bilans:</strong>
+            <span style="color: @Model.BalanceColor;">@Model.Balance zł</span>
+
+            @if (Model.Balance > 0)
+            {
+                <span style="color: green;"> Tak trzymaj!</span>
+            }
+            else if (Model.Balance < 0)
+            {
+                <span style="color: red;"> Meh</span>
+            }
+        </div>
     </div>
 }
 else
@@ -23,4 +54,17 @@ else
         Aby korzystać z funkcji zarządzania finansami, musisz być zalogowany.
         <a href="/Identity/Account/Login" class="btn btn-primary">Zaloguj się</a>
     </p>
+}
+
+@section Styles {
+    <style>
+        .summary {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        .summary-item {
+            margin-bottom: 10px;
+        }
+    </style>
 }
