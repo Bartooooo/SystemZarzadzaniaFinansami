@@ -64,6 +64,15 @@
     {
         <p>Brak wydatków w tym okresie.</p>
     }
+
+    <!-- Przycisk do eksportu CSV -->
+    <form method="get" action="@Url.Action("ExportToCSV", "Reports")">
+        <input type="hidden" name="startDate" value="@Model.StartDate" />
+        <input type="hidden" name="endDate" value="@Model.EndDate" />
+        <input type="hidden" name="reportType" value="@Model.ReportType" />
+        <input type="hidden" name="categoryId" value="@Model.SelectedCategory" />
+        <button type="submit" class="btn btn-success">Eksportuj do CSV</button>
+    </form>
 }
 else
 {
