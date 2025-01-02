@@ -19,11 +19,11 @@ namespace SystemZarzadzaniaFinansami.Models
         [Display(Name = "Data", Description = "Proszę podać datę transakcji")]
         public DateTime Date { get; set; }
 
-        [Required]
-        [Display(Name = "Kategoria")]
+        [Required(ErrorMessage = "Kategoria jest wymagana")]
+        [Display(Name = "Kategoria", Description = "Wybierz odpowiednią kategorię.")]
         public int CategoryId { get; set; }
 
-        [Display(Name = "Kategoria")]
+        [Display(Name = "Kategoria", Description = "Wybierz odpowiednią kategorię.")]
         public Category? Category { get; set; } // Nullable, jeśli brak kategorii jest dopuszczalny
 
         [Required]

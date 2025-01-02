@@ -15,15 +15,15 @@ namespace SystemZarzadzaniaFinansami.Models
         [Range(1, 10000000, ErrorMessage = "Minimalna wartość 1, maksymalna wartość 10000000")]
         public decimal Amount { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Data jest wymagana")]
         [Display(Name = "Data", Description = "Proszę podać datę transakcji")]
         public DateTime Date { get; set; }
 
-        [Required]
-        [Display(Name = "Kategoria")]
+        [Required(ErrorMessage = "Kategoria jest wymagana")]
+        [Display(Name = "Kategoria", Description = "Wybierz odpowiednią kategorię.")]
         public int CategoryId { get; set; }
 
-        [Display(Name = "Kategoria")]
+        [Display(Name = "Kategoria", Description = "Wybierz odpowiednią kategorię.")]
         public Category? Category { get; set; } // Nullable, jeśli brak kategorii jest dopuszczalny
 
         [Required]
