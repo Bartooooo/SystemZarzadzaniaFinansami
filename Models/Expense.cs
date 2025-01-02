@@ -21,6 +21,8 @@ namespace SystemZarzadzaniaFinansami.Models
         [Required]
         [Display(Name = "Kategoria")]
         public int CategoryId { get; set; }
+
+        [Display(Name = "Kategoria")]
         public Category? Category { get; set; } // Nullable, jeśli brak kategorii jest dopuszczalny
 
         [Required]
