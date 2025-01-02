@@ -10,6 +10,7 @@ namespace SystemZarzadzaniaFinansami.Models
 
         [Required]
         [StringLength(100)]
+        [Display(Name = "Nazwa")]
         public string Name { get; set; } = string.Empty; // Domyślna wartość dla uniknięcia null
 
         public ICollection<Income> Incomes { get; set; } = new List<Income>(); // Domyślna kolekcja
