@@ -10,13 +10,13 @@ namespace SystemZarzadzaniaFinansami.Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Kwota jest wymagana")]
-        [Display(Name = "Kwota")]
+        [Display(Name = "Kwota",Description = "Proszę podać kwotę transakcji")]
         [Column(TypeName = "decimal(18,2)")]
         [Range(1, 10000000, ErrorMessage = "Minimalna wartość 1, maksymalna wartość 10000000")]
         public decimal Amount { get; set; }
 
-        [Required]
-        [Display(Name = "Data")]
+        [Required(ErrorMessage = "Data jest wymagana")]
+        [Display(Name = "Data", Description = "Proszę podać datę transakcji")]
         public DateTime Date { get; set; }
 
         [Required]

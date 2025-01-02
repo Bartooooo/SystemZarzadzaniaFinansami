@@ -12,11 +12,11 @@ namespace SystemZarzadzaniaFinansami.Models
         [Required(ErrorMessage = "Kwota jest wymagana")]       
         [Display(Name = "Kwota",Description = "Proszę podać kwotę transakcji")]
         [Column(TypeName = "decimal(18,2)")]
-        [Range(0.01, 10000000.00, ErrorMessage = "Minimalna wartość 1, maksymalna wartość 10000000")]
+        [Range(1, 10000000, ErrorMessage = "Minimalna wartość 1, maksymalna wartość 10000000")]
         public decimal Amount { get; set; }
 
         [Required]
-        [Display(Name = "Data")]
+        [Display(Name = "Data", Description = "Proszę podać datę transakcji")]
         public DateTime Date { get; set; }
 
         [Required]
