@@ -11,15 +11,6 @@ namespace SystemZarzadzaniaFinansami
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Konfiguracja obs³ugi lokalizacji
-            var supportedCultures = new[] { "pl-PL", "en-US" };
-            builder.Services.Configure<RequestLocalizationOptions>(options =>
-            {
-                options.SetDefaultCulture("pl-PL");
-                options.AddSupportedCultures(supportedCultures);
-                options.AddSupportedUICultures(supportedCultures);
-            });
-
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
