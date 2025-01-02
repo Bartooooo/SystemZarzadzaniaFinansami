@@ -9,9 +9,10 @@ namespace SystemZarzadzaniaFinansami.Models
         [Key]
         public int Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Kwota jest wymagana")]       
         [Display(Name = "Kwota")]
         [Column(TypeName = "decimal(18,2)")]
+        [Range(1, 10000000, ErrorMessage = "Minimalna wartość 1, maksymalna wartość 10000000")]
         public decimal Amount { get; set; }
 
         [Required]

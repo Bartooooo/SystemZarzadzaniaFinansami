@@ -8,8 +8,8 @@ namespace SystemZarzadzaniaFinansami.Models
         [Key]
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(100)]
+        [Required(ErrorMessage = "Nazwa jest wymagana")]
+        [StringLength(30, MinimumLength = 3, ErrorMessage = "Nazwa Kategoria musi mieć od 3 do 30 znaków.")]
         [Display(Name = "Nazwa")]
         public string Name { get; set; } = string.Empty; // Domyślna wartość dla uniknięcia null
 
