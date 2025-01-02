@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using SystemZarzadzaniaFinansami.Data;
 
 namespace SystemZarzadzaniaFinansami
@@ -9,6 +10,15 @@ namespace SystemZarzadzaniaFinansami
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Konfiguracja obs³ugi lokalizacji
+            var supportedCultures = new[] { "pl-PL", "en-US" };
+            builder.Services.Configure<RequestLocalizationOptions>(options =>
+            {
+                options.SetDefaultCulture("pl-PL");
+                options.AddSupportedCultures(supportedCultures);
+                options.AddSupportedUICultures(supportedCultures);
+            });
 
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -23,6 +33,8 @@ namespace SystemZarzadzaniaFinansami
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
+            app.UseRequestLocalization();
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();

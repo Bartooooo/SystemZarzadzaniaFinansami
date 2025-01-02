@@ -14,7 +14,8 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
-                <input asp-for="Amount" class="form-control" />
+                <!-- Zmiana: dodanie input typu "number" oraz atrybutu step, aby wspierał liczby zmiennoprzecinkowe -->
+                <input asp-for="Amount" class="form-control" type="number" step="0.01" />
                 <span asp-validation-for="Amount" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -24,7 +25,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="CategoryId" class="control-label"></label>
-                <select asp-for="CategoryId" class ="form-control" asp-items="ViewBag.CategoryId"></select>
+                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
             </div>
             <div class="form-group">
                 <label asp-for="UserId" class="control-label"></label>
@@ -43,5 +44,18 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Obsługa konwersji przecinków na kropki przed wysłaniem formularza
+        document.querySelector('form').addEventListener('submit', function (e) {
+            var amountField = document.querySelector('input[name="Amount"]');
+            var amountValue = amountField.value;
+
+            // Zastępujemy przecinki kropkami przed wysłaniem formularza
+            amountField.value = amountValue.replace(',', '.');
+        });
+    </script>
 }
