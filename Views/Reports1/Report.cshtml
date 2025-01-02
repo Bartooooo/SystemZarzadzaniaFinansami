@@ -24,7 +24,7 @@
                 @foreach (var income in Model.Incomes)
                 {
                     <tr>
-                        <td>@income.Category.Name</td>
+                        <td>@(income.Category != null ? income.Category.Name : "Brak kategorii")</td>
                         <td>@income.Amount</td>
                         <td>@income.Date.ToString("yyyy-MM-dd")</td>
                     </tr>
@@ -52,7 +52,7 @@
                 @foreach (var expense in Model.Expenses)
                 {
                     <tr>
-                        <td>@expense.Category.Name</td>
+                        <td>@(expense.Category != null ? expense.Category.Name : "Brak kategorii")</td>
                         <td>@expense.Amount</td>
                         <td>@expense.Date.ToString("yyyy-MM-dd")</td>
                     </tr>

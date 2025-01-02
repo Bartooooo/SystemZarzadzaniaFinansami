@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -22,8 +21,17 @@ namespace SystemZarzadzaniaFinansami.Controllers
         // GET: Incomes
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Incomes.Include(i => i.Category);
-            return View(await applicationDbContext.ToListAsync());
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var incomes = _context.Incomes
+                .Include(i => i.Category)
+                .Where(i => i.UserId == userId);
+
+            return View(await incomes.ToListAsync());
         }
 
         // GET: Incomes/Details/5
@@ -34,9 +42,16 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return NotFound();
             }
 
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
             var income = await _context.Incomes
                 .Include(i => i.Category)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
+
             if (income == null)
             {
                 return NotFound();
@@ -53,12 +68,18 @@ namespace SystemZarzadzaniaFinansami.Controllers
         }
 
         // POST: Incomes/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Amount,Date,CategoryId,UserId")] Income income)
         {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            income.UserId = userId;
+
             if (ModelState.IsValid)
             {
                 _context.Add(income);
@@ -77,18 +98,23 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return NotFound();
             }
 
-            var income = await _context.Incomes.FindAsync(id);
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var income = await _context.Incomes.FirstOrDefaultAsync(i => i.Id == id && i.UserId == userId);
             if (income == null)
             {
                 return NotFound();
             }
+
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", income.CategoryId);
             return View(income);
         }
 
         // POST: Incomes/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Amount,Date,CategoryId,UserId")] Income income)
@@ -97,6 +123,14 @@ namespace SystemZarzadzaniaFinansami.Controllers
             {
                 return NotFound();
             }
+
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            income.UserId = userId;
 
             if (ModelState.IsValid)
             {
@@ -130,9 +164,16 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return NotFound();
             }
 
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
             var income = await _context.Incomes
                 .Include(i => i.Category)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
+
             if (income == null)
             {
                 return NotFound();
@@ -146,19 +187,25 @@ namespace SystemZarzadzaniaFinansami.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var income = await _context.Incomes.FindAsync(id);
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var income = await _context.Incomes.FirstOrDefaultAsync(i => i.Id == id && i.UserId == userId);
             if (income != null)
             {
                 _context.Incomes.Remove(income);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool IncomeExists(int id)
         {
-            return _context.Incomes.Any(e => e.Id == id);
+            return _context.Incomes.Any(i => i.Id == id);
         }
     }
 }
