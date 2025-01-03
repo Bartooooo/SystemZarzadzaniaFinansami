@@ -62,4 +62,14 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        // Obsługa konwersji przecinków na kropki przed wysłaniem formularza
+        document.querySelector('form').addEventListener('submit', function (e) {
+            var amountField = document.querySelector('input[name="Amount"]');
+            var amountValue = amountField.value;
+
+            // Zastępujemy przecinki kropkami przed wysłaniem formularza
+            amountField.value = amountValue.replace(',', '.');
+        });
+    </script>
 }
