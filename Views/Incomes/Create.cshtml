@@ -42,11 +42,10 @@
                 </small>
                 <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="UserId" class="control-label"></label>
-                <input asp-for="UserId" class="form-control" />
-                <span asp-validation-for="UserId" class="text-danger"></span>
-            </div>
+
+            <!-- Pole UserId jako ukryte -->
+            <input type="hidden" asp-for="UserId" value="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value" />
+
             <div class="form-group">
                 <input type="submit" value="Stwórz" class="btn btn-primary" />
             </div>
