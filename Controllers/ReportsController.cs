@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Globalization;
 using SystemZarzadzaniaFinansami.Data;
 using SystemZarzadzaniaFinansami.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -63,9 +65,10 @@ namespace SystemZarzadzaniaFinansami.Controllers
             // Filtruj na podstawie kategorii (jeśli wybrana)
             if (categoryId.HasValue)
             {
-                var isUserCategory = await _context.Categories
-                    .AnyAsync(c => c.Id == categoryId && c.UserId == userId);
-                if (!isUserCategory)
+                var category = await _context.Categories
+                    .FirstOrDefaultAsync(c => c.Id == categoryId && c.UserId == userId);
+
+                if (category == null)
                 {
                     return BadRequest("Nieprawidłowa kategoria.");
                 }
@@ -116,5 +119,72 @@ namespace SystemZarzadzaniaFinansami.Controllers
 
             return View("~/Views/Reports1/Report.cshtml", report);
         }
+
+        // GET: Reports/ExportToCSV
+        [HttpGet]
+        public async Task<IActionResult> ExportToCSV(DateTime? startDate, DateTime? endDate, string reportType, int? categoryId)
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            if (!startDate.HasValue || !endDate.HasValue)
+            {
+                return BadRequest("Nie podano zakresu dat.");
+            }
+
+            var incomesQuery = _context.Incomes
+                .Include(i => i.Category)
+                .Where(i => i.UserId == userId);
+            var expensesQuery = _context.Expenses
+                .Include(e => e.Category)
+                .Where(e => e.UserId == userId);
+
+            if (categoryId.HasValue)
+            {
+                incomesQuery = incomesQuery.Where(i => i.CategoryId == categoryId);
+                expensesQuery = expensesQuery.Where(e => e.CategoryId == categoryId);
+            }
+
+            if (reportType == "incomes")
+            {
+                expensesQuery = _context.Expenses.Where(e => e.Id == 0);
+            }
+            else if (reportType == "expenses")
+            {
+                incomesQuery = _context.Incomes.Where(i => i.Id == 0);
+            }
+
+            var incomes = await incomesQuery
+                .Where(i => i.Date >= startDate && i.Date <= endDate)
+                .ToListAsync();
+            var expenses = await expensesQuery
+                .Where(e => e.Date >= startDate && e.Date <= endDate)
+                .ToListAsync();
+
+            // Tworzenie CSV
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine("Typ,Kategoria,Data,Kwota");
+
+            foreach (var income in incomes)
+            {
+                stringBuilder.AppendLine($"Przychód,\"{income.Category?.Name ?? "Brak kategorii"}\",{income.Date.ToString("yyyy-MM-dd")},{income.Amount.ToString("F2", CultureInfo.InvariantCulture)}");
+            }
+
+            foreach (var expense in expenses)
+            {
+                stringBuilder.AppendLine($"Wydatek,\"{expense.Category?.Name ?? "Brak kategorii"}\",{expense.Date.ToString("yyyy-MM-dd")},{expense.Amount.ToString("F2", CultureInfo.InvariantCulture)}");
+            }
+
+            // Ustawianie nazwy pliku
+            var fileName = $"Raport_{DateTime.Now:yyyyMMddHHmmss}.csv";
+
+            // Zwracanie pliku CSV
+            return File(Encoding.UTF8.GetBytes(stringBuilder.ToString()), "text/csv", fileName);
+        }
+
     }
 }
