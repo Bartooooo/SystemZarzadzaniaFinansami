@@ -10,6 +10,7 @@ namespace SystemZarzadzaniaFinansami.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            Console.WriteLine("Migracja: Dodawanie UserId do tabeli Categories.");
             migrationBuilder.AlterColumn<string>(
                 name: "Name",
                 table: "Categories",
@@ -26,7 +27,9 @@ namespace SystemZarzadzaniaFinansami.Data.Migrations
                 type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "");
+            Console.WriteLine("Migracja zakończona.");
         }
+
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)

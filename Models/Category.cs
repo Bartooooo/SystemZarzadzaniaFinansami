@@ -11,9 +11,12 @@ namespace SystemZarzadzaniaFinansami.Models
         [Required(ErrorMessage = "Nazwa jest wymagana")]
         [StringLength(30, MinimumLength = 1, ErrorMessage = "Nazwa Kategoria musi mieć od 1 do 30 znaków.")]
         [Display(Name = "Nazwa")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty; // Domyślna wartość
 
-        public ICollection<Income> Incomes { get; set; } = new List<Income>(); // Domyślna kolekcja
-        public ICollection<Expense> Expenses { get; set; } = new List<Expense>(); // Domyślna kolekcja
+        [Required]
+        public string UserId { get; set; } = string.Empty; // Dodano pole UserId
+
+        public ICollection<Income> Incomes { get; set; } = new List<Income>();
+        public ICollection<Expense> Expenses { get; set; } = new List<Expense>();
     }
 }

@@ -10,17 +10,16 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <form asp-action="Create" method="post">
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
+                <label asp-for="Name"></label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Stwórz" class="btn btn-primary" />
-            </div>
+            <button type="submit" class="btn btn-primary">Dodaj</button>
         </form>
+
+
     </div>
 </div>
 
@@ -30,4 +29,11 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.querySelector('form').addEventListener('submit', function (e) {
+            console.log("Formularz wysłany");
+            console.log("Wartość pola Name: ", document.querySelector('input[name="Name"]').value);
+        });
+    </script>
+
 }

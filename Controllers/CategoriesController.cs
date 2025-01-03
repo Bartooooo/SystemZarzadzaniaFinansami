@@ -22,7 +22,14 @@ namespace SystemZarzadzaniaFinansami.Controllers
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Categories.ToListAsync());
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var categories = _context.Categories.Where(c => c.UserId == userId);
+            return View(await categories.ToListAsync());
         }
 
         // GET: Categories/Details/5
@@ -33,8 +40,14 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return NotFound();
             }
 
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
             var category = await _context.Categories
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
             if (category == null)
             {
                 return NotFound();
@@ -54,14 +67,43 @@ namespace SystemZarzadzaniaFinansami.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
         {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            category.UserId = userId; // Przypisanie wartości UserId
+            ModelState.Remove("UserId"); // Usunięcie walidacji pola UserId
+
             if (ModelState.IsValid)
             {
-                _context.Add(category);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    _context.Add(category);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Błąd podczas zapisu do bazy danych: {ex.Message}");
+                    ModelState.AddModelError("", "Nie można dodać kategorii. Spróbuj ponownie.");
+                }
             }
+            else
+            {
+                Console.WriteLine("ModelState jest niepoprawny.");
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"Błąd walidacji: {error.ErrorMessage}");
+                }
+            }
+
             return View(category);
         }
+
+
+
 
         // GET: Categories/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -71,7 +113,13 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return NotFound();
             }
 
-            var category = await _context.Categories.FindAsync(id);
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
             if (category == null)
             {
                 return NotFound();
@@ -88,6 +136,14 @@ namespace SystemZarzadzaniaFinansami.Controllers
             {
                 return NotFound();
             }
+
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            category.UserId = userId;
 
             if (ModelState.IsValid)
             {
@@ -120,8 +176,14 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return NotFound();
             }
 
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
             var category = await _context.Categories
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
             if (category == null)
             {
                 return NotFound();
@@ -135,7 +197,13 @@ namespace SystemZarzadzaniaFinansami.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
             if (category != null)
             {
                 _context.Categories.Remove(category);
@@ -147,7 +215,8 @@ namespace SystemZarzadzaniaFinansami.Controllers
 
         private bool CategoryExists(int id)
         {
-            return _context.Categories.Any(e => e.Id == id);
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            return _context.Categories.Any(e => e.Id == id && e.UserId == userId);
         }
     }
 }
