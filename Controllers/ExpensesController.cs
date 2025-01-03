@@ -63,7 +63,17 @@ namespace SystemZarzadzaniaFinansami.Controllers
         // GET: Expenses/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            ViewData["CategoryId"] = new SelectList(
+                _context.Categories.Where(c => c.UserId == userId),
+                "Id",
+                "Name"
+            );
             return View();
         }
 
@@ -86,7 +96,13 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", expense.CategoryId);
+
+            ViewData["CategoryId"] = new SelectList(
+                _context.Categories.Where(c => c.UserId == userId),
+                "Id",
+                "Name",
+                expense.CategoryId
+            );
             return View(expense);
         }
 
@@ -110,7 +126,12 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return NotFound();
             }
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", expense.CategoryId);
+            ViewData["CategoryId"] = new SelectList(
+                _context.Categories.Where(c => c.UserId == userId),
+                "Id",
+                "Name",
+                expense.CategoryId
+            );
             return View(expense);
         }
 
@@ -152,7 +173,13 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", expense.CategoryId);
+
+            ViewData["CategoryId"] = new SelectList(
+                _context.Categories.Where(c => c.UserId == userId),
+                "Id",
+                "Name",
+                expense.CategoryId
+            );
             return View(expense);
         }
 
