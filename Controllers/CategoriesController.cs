@@ -64,43 +64,43 @@ namespace SystemZarzadzaniaFinansami.Controllers
 
         // POST: Categories/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
+{
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userId))
+    {
+        return Unauthorized();
+    }
+
+    category.UserId = userId; // Przypisanie wartości UserId
+    ModelState.Remove("UserId"); // Usunięcie walidacji pola UserId
+
+    if (ModelState.IsValid)
+    {
+        try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized();
-            }
-
-            category.UserId = userId; // Przypisanie wartości UserId
-            ModelState.Remove("UserId"); // Usunięcie walidacji pola UserId
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Add(category);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Błąd podczas zapisu do bazy danych: {ex.Message}");
-                    ModelState.AddModelError("", "Nie można dodać kategorii. Spróbuj ponownie.");
-                }
-            }
-            else
-            {
-                Console.WriteLine("ModelState jest niepoprawny.");
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    Console.WriteLine($"Błąd walidacji: {error.ErrorMessage}");
-                }
-            }
-
-            return View(category);
+            _context.Add(category);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd podczas zapisu do bazy danych: {ex.Message}");
+            ModelState.AddModelError("", "Nie można dodać kategorii. Spróbuj ponownie.");
+        }
+    }
+    else
+    {
+        Console.WriteLine("ModelState jest niepoprawny.");
+        foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+        {
+            Console.WriteLine($"Błąd walidacji: {error.ErrorMessage}");
+        }
+    }
+
+    return View(category);
+}
 
 
 

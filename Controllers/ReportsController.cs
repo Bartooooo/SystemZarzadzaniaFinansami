@@ -21,8 +21,17 @@ namespace SystemZarzadzaniaFinansami.Controllers
         // GET: Reports/Index
         public IActionResult Index()
         {
-            var categories = _context.Categories.ToList();
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            // Pobierz tylko kategorie użytkownika
+            var categories = _context.Categories.Where(c => c.UserId == userId).ToList();
             ViewBag.Categories = categories;
+
             return View("~/Views/Reports1/Index.cshtml");
         }
 
@@ -43,11 +52,24 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 endDate = DateTime.Now;
             }
 
-            var incomesQuery = _context.Incomes.Include(i => i.Category).Where(i => i.UserId == userId);
-            var expensesQuery = _context.Expenses.Include(e => e.Category).Where(e => e.UserId == userId);
+            // Pobierz tylko dane użytkownika
+            var incomesQuery = _context.Incomes
+                .Include(i => i.Category)
+                .Where(i => i.UserId == userId);
+            var expensesQuery = _context.Expenses
+                .Include(e => e.Category)
+                .Where(e => e.UserId == userId);
 
+            // Filtruj na podstawie kategorii (jeśli wybrana)
             if (categoryId.HasValue)
             {
+                var isUserCategory = await _context.Categories
+                    .AnyAsync(c => c.Id == categoryId && c.UserId == userId);
+                if (!isUserCategory)
+                {
+                    return BadRequest("Nieprawidłowa kategoria.");
+                }
+
                 incomesQuery = incomesQuery.Where(i => i.CategoryId == categoryId);
                 expensesQuery = expensesQuery.Where(e => e.CategoryId == categoryId);
             }
@@ -61,8 +83,12 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 incomesQuery = _context.Incomes.Where(i => i.Id == 0); // Pusty wynik dla przychodów
             }
 
-            var incomes = await incomesQuery.Where(i => i.Date >= startDate && i.Date <= endDate).ToListAsync();
-            var expenses = await expensesQuery.Where(e => e.Date >= startDate && e.Date <= endDate).ToListAsync();
+            var incomes = await incomesQuery
+                .Where(i => i.Date >= startDate && i.Date <= endDate)
+                .ToListAsync();
+            var expenses = await expensesQuery
+                .Where(e => e.Date >= startDate && e.Date <= endDate)
+                .ToListAsync();
 
             var incomeTotal = incomes.Sum(i => i.Amount);
             var expenseTotal = expenses.Sum(e => e.Amount);
