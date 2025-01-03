@@ -7,11 +7,13 @@
 <form asp-action="GenerateReport" method="post">
     <div class="form-group">
         <label for="startDate">Data początkowa:</label>
-        <input type="date" id="startDate" name="startDate" class="form-control" />
+        <input type="date" id="startDate" name="startDate" value="@DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd")" required />
+        <small class="form-text text-muted">Wprowadź datę początkową</small>
     </div>
     <div class="form-group">
         <label for="endDate">Data końcowa:</label>
-        <input type="date" id="endDate" name="endDate" class="form-control" />
+        <input type="date" id="endDate" name="endDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+        <small class="form-text text-muted">Wprowadź datę końcową</small>
     </div>
 
     <div class="form-group">
@@ -23,6 +25,7 @@
                 <option value="@category.Id">@category.Name</option>
             }
         </select>
+        <small class="form-text text-muted">Wybierz z jakich kategorii chcesz wygenerować raport</small>
     </div>
 
     <div class="form-group">
@@ -32,6 +35,7 @@
             <option value="incomes">Przychody</option>
             <option value="expenses">Wydatki</option>
         </select>
+        <small class="form-text text-muted">Wybierz jaki typ raportu chcesz wygenerować</small>
     </div>
 
     <div class="form-group">

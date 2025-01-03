@@ -48,10 +48,19 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return Unauthorized();
             }
 
-            if (!startDate.HasValue || !endDate.HasValue)
+            if (!startDate.HasValue)
             {
-                startDate = DateTime.Now.AddMonths(-1);
+                startDate = DateTime.Now.AddDays(-30); // Ostatnie 30 dni
+            }
+
+            if (!endDate.HasValue)
+            {
                 endDate = DateTime.Now;
+            }
+
+            if (startDate > endDate)
+            {
+                return BadRequest("Data początkowa nie może być późniejsza niż data końcowa.");
             }
 
             // Pobierz tylko dane użytkownika
