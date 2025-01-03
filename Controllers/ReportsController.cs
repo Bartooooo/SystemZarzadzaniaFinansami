@@ -63,6 +63,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return BadRequest("Data początkowa nie może być późniejsza niż data końcowa.");
             }
 
+            else
+            {
+                endDate = endDate.Value.Date.AddDays(1).AddTicks(-1); // Ustaw na koniec dnia
+            }
+
             // Pobierz tylko dane użytkownika
             var incomesQuery = _context.Incomes
                 .Include(i => i.Category)
