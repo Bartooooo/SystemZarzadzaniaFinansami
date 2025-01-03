@@ -14,7 +14,6 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
-                <!-- Zmiana: dodanie input typu "number" oraz atrybutu step, aby wspierał liczby zmiennoprzecinkowe -->
                 <input asp-for="Amount" class="form-control" type="number" step="0.01" />
                 <small class="form-text text-muted">
                     @Html.Raw(ViewData.ModelMetadata.Properties
