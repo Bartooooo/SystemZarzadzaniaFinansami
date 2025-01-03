@@ -9,7 +9,7 @@ namespace SystemZarzadzaniaFinansami.Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Nazwa jest wymagana")]
-        [StringLength(30, MinimumLength = 1, ErrorMessage = "Nazwa Kategorii musi mieć od 1 do 30 znaków.")]
+        [StringLength(30, MinimumLength = 1, ErrorMessage = "Nazwa kategorii musi mieć od 1 do 30 znaków.")]
         [Display(Name = "Nazwa")]
         public string Name { get; set; } = string.Empty; // Domyślna wartość
 

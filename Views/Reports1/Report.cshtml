@@ -27,7 +27,7 @@
                     @foreach (var income in Model.Incomes)
                     {
                         <tr>
-                            <td>@(income.Category != null ? income.Category.Name : "Brak kategorii")</td>
+                            <td>@(income.Category?.Name ?? "Brak kategorii")</td>
                             <td>@income.Amount</td>
                             <td>@income.Date.ToString("yyyy-MM-dd")</td>
                         </tr>
@@ -55,7 +55,7 @@
                     @foreach (var expense in Model.Expenses)
                     {
                         <tr>
-                            <td>@(expense.Category != null ? expense.Category.Name : "Brak kategorii")</td>
+                            <td>@(expense.Category?.Name ?? "Brak kategorii")</td>
                             <td>@expense.Amount</td>
                             <td>@expense.Date.ToString("yyyy-MM-dd")</td>
                         </tr>
@@ -86,7 +86,7 @@
                     @foreach (var income in Model.Incomes)
                     {
                         <tr>
-                            <td>@(income.Category != null ? income.Category.Name : "Brak kategorii")</td>
+                            <td>@(income.Category?.Name ?? "Brak kategorii")</td>
                             <td>@income.Amount</td>
                             <td>@income.Date.ToString("yyyy-MM-dd")</td>
                         </tr>
@@ -117,7 +117,7 @@
                     @foreach (var expense in Model.Expenses)
                     {
                         <tr>
-                            <td>@(expense.Category != null ? expense.Category.Name : "Brak kategorii")</td>
+                            <td>@(expense.Category?.Name ?? "Brak kategorii")</td>
                             <td>@expense.Amount</td>
                             <td>@expense.Date.ToString("yyyy-MM-dd")</td>
                         </tr>
@@ -138,6 +138,15 @@
         <input type="hidden" name="reportType" value="@Model.ReportType" />
         <button type="submit" class="btn btn-success">Eksportuj do CSV</button>
     </form>
+
+    <!-- Wykres słupkowy -->
+    <div style="margin-top: 30px;">
+        <h3>Wykres finansowy</h3>
+        <img src="@Url.Action("GenerateBarChart", "Reports", new {
+            incomeTotal = Model.IncomeTotal,
+            expenseTotal = Model.ExpenseTotal
+        })" alt="Wykres słupkowy" />
+    </div>
 }
 else
 {

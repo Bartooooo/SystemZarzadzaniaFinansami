@@ -20,7 +20,7 @@
     <hr />
 
     <!-- Podsumowanie finansowe -->
-    <h2>Podsumowanie finansowe</h2>
+    <h2>Podsumowanie finansowe miesiąca</h2>
     <div class="summary">
         <div class="summary-item">
             <span>@Model.CurrentMonth:</span>
@@ -47,6 +47,12 @@
             }
         </div>
     </div>
+
+    <hr />
+
+    <!-- Wykres -->
+    <h2>Wykres przychodów i wydatków miesiąca</h2>
+    <img src="@Url.Action("GenerateChart", "Home")" alt="Wykres finansowy" />
 }
 else
 {
@@ -65,6 +71,13 @@ else
 
         .summary-item {
             margin-bottom: 10px;
+        }
+
+        img {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-width: 100%;
         }
     </style>
 }

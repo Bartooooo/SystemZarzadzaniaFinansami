@@ -7,6 +7,9 @@ using System.Globalization;
 using SystemZarzadzaniaFinansami.Data;
 using SystemZarzadzaniaFinansami.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 
 namespace SystemZarzadzaniaFinansami.Controllers
 {
@@ -62,13 +65,12 @@ namespace SystemZarzadzaniaFinansami.Controllers
             {
                 return BadRequest("Data początkowa nie może być późniejsza niż data końcowa.");
             }
-
             else
             {
                 endDate = endDate.Value.Date.AddDays(1).AddTicks(-1); // Ustaw na koniec dnia
             }
 
-            // Pobierz tylko dane użytkownika
+            // Pobierz dane użytkownika
             var incomesQuery = _context.Incomes
                 .Include(i => i.Category)
                 .Where(i => i.UserId == userId);
@@ -76,7 +78,7 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 .Include(e => e.Category)
                 .Where(e => e.UserId == userId);
 
-            // Filtruj na podstawie kategorii (jeśli wybrana)
+            // Filtruj według kategorii
             if (categoryId.HasValue)
             {
                 var category = await _context.Categories
@@ -134,70 +136,55 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View("~/Views/Reports1/Report.cshtml", report);
         }
 
-        // GET: Reports/ExportToCSV
+        // GET: Reports/GenerateBarChart
         [HttpGet]
-        public async Task<IActionResult> ExportToCSV(DateTime? startDate, DateTime? endDate, string reportType, int? categoryId)
+        public IActionResult GenerateBarChart(decimal incomeTotal, decimal expenseTotal)
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
+            using (var bitmap = new Bitmap(600, 450)) // Zwiększenie wysokości obrazu
+            using (var graphics = Graphics.FromImage(bitmap))
             {
-                return Unauthorized();
+                graphics.Clear(Color.White);
+
+                var maxValue = Math.Max(incomeTotal, expenseTotal);
+                if (maxValue == 0)
+                {
+                    maxValue = 1; // Zapobieganie dzieleniu przez zero
+                }
+
+                var incomeHeight = (int)((incomeTotal / maxValue) * 300);
+                var expenseHeight = (int)((expenseTotal / maxValue) * 300);
+
+                // Rysowanie słupków
+                var barWidth = 100;
+                var barSpacing = 200;
+
+                graphics.FillRectangle(Brushes.Green, 100, 400 - incomeHeight, barWidth, incomeHeight);
+                graphics.FillRectangle(Brushes.Red, 100 + barSpacing, 400 - expenseHeight, barWidth, expenseHeight);
+
+                // Dodanie wartości liczbowych
+                graphics.DrawString($"Przychody: {incomeTotal} zł", new Font("Arial", 12), Brushes.Black, 100, 400 - incomeHeight - 20);
+                graphics.DrawString($"Wydatki: {expenseTotal} zł", new Font("Arial", 12), Brushes.Black, 100 + barSpacing, 400 - expenseHeight - 20);
+
+                // Oś X
+                graphics.DrawLine(Pens.Black, 50, 400, 550, 400); // Linia osi X
+                graphics.DrawString("Przychody", new Font("Arial", 12), Brushes.Black, 100 + (barWidth / 2) - 30, 410); // Przesunięcie etykiety w dół
+                graphics.DrawString("Wydatki", new Font("Arial", 12), Brushes.Black, 100 + barSpacing + (barWidth / 2) - 30, 410); // Przesunięcie etykiety w dół
+
+                // Oś Y
+                graphics.DrawLine(Pens.Black, 50, 50, 50, 400); // Linia osi Y
+                for (int i = 0; i <= maxValue; i += (int)Math.Ceiling(maxValue / 5))
+                {
+                    var y = 400 - (int)((i / maxValue) * 300);
+                    graphics.DrawString(i.ToString(), new Font("Arial", 10), Brushes.Black, 10, y - 5);
+                    graphics.DrawLine(Pens.Gray, 50, y, 550, y); // Siatka osi Y
+                }
+
+                using (var stream = new MemoryStream())
+                {
+                    bitmap.Save(stream, ImageFormat.Png);
+                    return File(stream.ToArray(), "image/png");
+                }
             }
-
-            if (!startDate.HasValue || !endDate.HasValue)
-            {
-                return BadRequest("Nie podano zakresu dat.");
-            }
-
-            var incomesQuery = _context.Incomes
-                .Include(i => i.Category)
-                .Where(i => i.UserId == userId);
-            var expensesQuery = _context.Expenses
-                .Include(e => e.Category)
-                .Where(e => e.UserId == userId);
-
-            if (categoryId.HasValue)
-            {
-                incomesQuery = incomesQuery.Where(i => i.CategoryId == categoryId);
-                expensesQuery = expensesQuery.Where(e => e.CategoryId == categoryId);
-            }
-
-            if (reportType == "incomes")
-            {
-                expensesQuery = _context.Expenses.Where(e => e.Id == 0);
-            }
-            else if (reportType == "expenses")
-            {
-                incomesQuery = _context.Incomes.Where(i => i.Id == 0);
-            }
-
-            var incomes = await incomesQuery
-                .Where(i => i.Date >= startDate && i.Date <= endDate)
-                .ToListAsync();
-            var expenses = await expensesQuery
-                .Where(e => e.Date >= startDate && e.Date <= endDate)
-                .ToListAsync();
-
-            // Tworzenie CSV
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine("Typ,Kategoria,Data,Kwota");
-
-            foreach (var income in incomes)
-            {
-                stringBuilder.AppendLine($"Przychód,\"{income.Category?.Name ?? "Brak kategorii"}\",{income.Date.ToString("yyyy-MM-dd")},{income.Amount.ToString("F2", CultureInfo.InvariantCulture)}");
-            }
-
-            foreach (var expense in expenses)
-            {
-                stringBuilder.AppendLine($"Wydatek,\"{expense.Category?.Name ?? "Brak kategorii"}\",{expense.Date.ToString("yyyy-MM-dd")},{expense.Amount.ToString("F2", CultureInfo.InvariantCulture)}");
-            }
-
-            // Ustawianie nazwy pliku
-            var fileName = $"Raport_{DateTime.Now:yyyyMMddHHmmss}.csv";
-
-            // Zwracanie pliku CSV
-            return File(Encoding.UTF8.GetBytes(stringBuilder.ToString()), "text/csv", fileName);
         }
 
     }
