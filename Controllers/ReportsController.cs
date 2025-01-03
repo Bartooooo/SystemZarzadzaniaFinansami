@@ -54,11 +54,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
 
             if (reportType == "incomes")
             {
-                expensesQuery = _context.Expenses.Where(e => e.Id == 0); // Zapytanie, które zawsze zwraca pusty wynik
+                expensesQuery = _context.Expenses.Where(e => e.Id == 0); // Pusty wynik dla wydatków
             }
             else if (reportType == "expenses")
             {
-                incomesQuery = _context.Incomes.Where(i => i.Id == 0); // Zapytanie, które zawsze zwraca pusty wynik
+                incomesQuery = _context.Incomes.Where(i => i.Id == 0); // Pusty wynik dla przychodów
             }
 
             var incomes = await incomesQuery.Where(i => i.Date >= startDate && i.Date <= endDate).ToListAsync();
@@ -68,15 +68,16 @@ namespace SystemZarzadzaniaFinansami.Controllers
             var expenseTotal = expenses.Sum(e => e.Amount);
             var balance = incomeTotal - expenseTotal;
 
-            var selectedCategory = "Wszystkie kategorie";
-            if (categoryId.HasValue)
+            string reportName = reportType switch
             {
-                var category = await _context.Categories.FindAsync(categoryId);
-                selectedCategory = category != null ? category.Name : "Nieznana kategoria";
-            }
+                "incomes" => "Raport przychody",
+                "expenses" => "Raport wydatki",
+                _ => "Raport finansowy"
+            };
 
             var report = new
             {
+                ReportName = reportName,
                 StartDate = startDate.Value.ToString("yyyy-MM-dd"),
                 EndDate = endDate.Value.ToString("yyyy-MM-dd"),
                 ReportType = reportType,
@@ -84,8 +85,7 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 Expenses = expenses,
                 IncomeTotal = incomeTotal,
                 ExpenseTotal = expenseTotal,
-                Balance = balance,
-                SelectedCategory = selectedCategory
+                Balance = balance
             };
 
             return View("~/Views/Reports1/Report.cshtml", report);

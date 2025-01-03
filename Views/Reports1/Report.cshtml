@@ -1,68 +1,134 @@
 ﻿@model dynamic
 
-<h1>Raport finansowy</h1>
+<h1>@Model.ReportName</h1>
 
 @if (Model != null)
 {
     <p>Okres: @Model.StartDate - @Model.EndDate</p>
-    <p>Przychody: @Model.IncomeTotal zł</p>
-    <p>Wydatki: @Model.ExpenseTotal zł</p>
-    <p>Bilans: @Model.Balance zł</p>
 
-    <h3>Przychody:</h3>
-    @if (Model.Incomes.Count > 0)
+    @if (Model.ReportType == "all")
     {
-        <table>
-            <thead>
-                <tr>
-                    <th>Kategoria</th>
-                    <th>Kwota</th>
-                    <th>Data</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var income in Model.Incomes)
-                {
-                    <tr>
-                        <td>@(income.Category != null ? income.Category.Name : "Brak kategorii")</td>
-                        <td>@income.Amount</td>
-                        <td>@income.Date.ToString("yyyy-MM-dd")</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <p>Brak przychodów w tym okresie.</p>
-    }
+        <p>Przychody: @Model.IncomeTotal zł</p>
+        <p>Wydatki: @Model.ExpenseTotal zł</p>
+        <p>Bilans: @Model.Balance zł</p>
 
-    <h3>Wydatki:</h3>
-    @if (Model.Expenses.Count > 0)
-    {
-        <table>
-            <thead>
-                <tr>
-                    <th>Kategoria</th>
-                    <th>Kwota</th>
-                    <th>Data</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var expense in Model.Expenses)
-                {
+        <h3>Przychody:</h3>
+        @if (Model.Incomes.Count > 0)
+        {
+            <table>
+                <thead>
                     <tr>
-                        <td>@(expense.Category != null ? expense.Category.Name : "Brak kategorii")</td>
-                        <td>@expense.Amount</td>
-                        <td>@expense.Date.ToString("yyyy-MM-dd")</td>
+                        <th>Kategoria</th>
+                        <th>Kwota</th>
+                        <th>Data</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var income in Model.Incomes)
+                    {
+                        <tr>
+                            <td>@(income.Category != null ? income.Category.Name : "Brak kategorii")</td>
+                            <td>@income.Amount</td>
+                            <td>@income.Date.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>Brak przychodów w tym okresie.</p>
+        }
+
+        <h3>Wydatki:</h3>
+        @if (Model.Expenses.Count > 0)
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kategoria</th>
+                        <th>Kwota</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var expense in Model.Expenses)
+                    {
+                        <tr>
+                            <td>@(expense.Category != null ? expense.Category.Name : "Brak kategorii")</td>
+                            <td>@expense.Amount</td>
+                            <td>@expense.Date.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>Brak wydatków w tym okresie.</p>
+        }
     }
-    else
+    else if (Model.ReportType == "incomes")
     {
-        <p>Brak wydatków w tym okresie.</p>
+        <p>Przychody: @Model.IncomeTotal zł</p>
+        <h3>Przychody:</h3>
+        @if (Model.Incomes.Count > 0)
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kategoria</th>
+                        <th>Kwota</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var income in Model.Incomes)
+                    {
+                        <tr>
+                            <td>@(income.Category != null ? income.Category.Name : "Brak kategorii")</td>
+                            <td>@income.Amount</td>
+                            <td>@income.Date.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>Brak przychodów w tym okresie.</p>
+        }
+    }
+    else if (Model.ReportType == "expenses")
+    {
+        <p>Wydatki: @Model.ExpenseTotal zł</p>
+        <h3>Wydatki:</h3>
+        @if (Model.Expenses.Count > 0)
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kategoria</th>
+                        <th>Kwota</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var expense in Model.Expenses)
+                    {
+                        <tr>
+                            <td>@(expense.Category != null ? expense.Category.Name : "Brak kategorii")</td>
+                            <td>@expense.Amount</td>
+                            <td>@expense.Date.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>Brak wydatków w tym okresie.</p>
+        }
     }
 
     <!-- Przycisk do eksportu CSV -->
@@ -70,7 +136,6 @@
         <input type="hidden" name="startDate" value="@Model.StartDate" />
         <input type="hidden" name="endDate" value="@Model.EndDate" />
         <input type="hidden" name="reportType" value="@Model.ReportType" />
-        <input type="hidden" name="categoryId" value="@Model.SelectedCategory" />
         <button type="submit" class="btn btn-success">Eksportuj do CSV</button>
     </form>
 }
