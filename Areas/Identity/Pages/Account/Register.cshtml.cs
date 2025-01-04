@@ -52,7 +52,7 @@ namespace SystemZarzadzaniaFinansami.Areas.Identity.Pages.Account
         {
             [Required(ErrorMessage = "Adres e-mail jest wymagany.")]
             [EmailAddress(ErrorMessage = "Nieprawidłowy format adresu e-mail.")]
-            [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Wprowadź poprawny adres e-mail (np. a@b.c).")]
+            [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Wprowadź poprawny adres e-mail (np. test@test.pl).")]
             [Display(Name = "Email")]
             public string Email { get; set; }
 
