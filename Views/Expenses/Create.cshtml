@@ -4,9 +4,7 @@
     ViewData["Title"] = "Tworzenie wydatku";
 }
 
-<h1>Stwórz</h1>
-
-<h4>Wydatek</h4>
+<h1>Stwórz Wydatek</h1>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -15,35 +13,24 @@
             <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
                 <input asp-for="Amount" class="form-control" type="number" step="0.01" />
-                <small class="form-text text-muted">
-                    @Html.Raw(ViewData.ModelMetadata.Properties
-                             .FirstOrDefault(p => p.PropertyName == nameof(Model.Amount))
-                             ?.Description)
-                </small>
                 <span asp-validation-for="Amount" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Date" class="control-label"></label>
-                <input asp-for="Date" class="form-control" />
-                <small class="form-text text-muted">
-                    @Html.Raw(ViewData.ModelMetadata.Properties
-                             .FirstOrDefault(p => p.PropertyName == nameof(Model.Date))
-                             ?.Description)
-                </small>
+                <input asp-for="Date" class="form-control" type="date" />
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="CategoryId" class="control-label"></label>
                 <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
-                <small class="form-text text-muted">
-                    @Html.Raw(ViewData.ModelMetadata.Properties
-                             .FirstOrDefault(p => p.PropertyName == nameof(Model.CategoryId))
-                             ?.Description)
-                </small>
+                @if (ViewBag.CategoryId == null || !ViewBag.CategoryId.GetEnumerator().MoveNext())
+                {
+                    <p class="text-muted">Brak kategorii? <a asp-controller="Categories" asp-action="Create">Dodaj ją tutaj</a>.</p>
+                }
                 <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
 
-            <!-- Pole UserId jako ukryte -->
+
             <input type="hidden" asp-for="UserId" value="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value" />
 
             <div class="form-group">
@@ -58,10 +45,7 @@
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-
+    @await Html.PartialAsync("_ValidationScriptsPartial")
     <script>
         // Obsługa konwersji przecinków na kropki przed wysłaniem formularza
         document.querySelector('form').addEventListener('submit', function (e) {

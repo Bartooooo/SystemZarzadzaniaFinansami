@@ -69,13 +69,19 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return Unauthorized();
             }
 
-            ViewData["CategoryId"] = new SelectList(
-                _context.Categories.Where(c => c.UserId == userId),
-                "Id",
-                "Name"
-            );
+            ViewBag.CategoryId = _context.Categories
+                .Where(c => c.UserId == userId)
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                }).ToList();
+
             return View();
         }
+
+
+
 
         // POST: Incomes/Create
         [HttpPost]
