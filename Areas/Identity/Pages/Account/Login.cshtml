@@ -6,18 +6,22 @@
 
 <h1>Zaloguj się</h1>
 
-<p>Jeśli nie masz konta, możesz się <a href="/Identity/Account/Register">zarejestrować tutaj</a>.</p>
+<p>Nie masz konta? <a href="/Identity/Account/Register">Dołącz do naszej elitarnej grupy finansowych ninja tutaj</a>.</p>
 
 <form method="post">
     <div class="form-group">
         <label asp-for="Input.Email"></label>
-        <input asp-for="Input.Email" class="form-control" />
+        <input asp-for="Input.Email" class="form-control" placeholder="Twój e-mail" />
         <span asp-validation-for="Input.Email" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="Input.Password"></label>
-        <input asp-for="Input.Password" class="form-control" />
+        <input asp-for="Input.Password" class="form-control" type="password" placeholder="Twoje supertajne hasło" />
         <span asp-validation-for="Input.Password" class="text-danger"></span>
     </div>
-    <button type="submit" class="btn btn-primary">Zaloguj</button>
+    <div class="form-group">
+        <input asp-for="Input.RememberMe" type="checkbox" />
+        <label asp-for="Input.RememberMe">Zapamiętaj mnie (tylko jeśli ufasz swojej przeglądarce 😉)</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Wejdź na pokład</button>
 </form>

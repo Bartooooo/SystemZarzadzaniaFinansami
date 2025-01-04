@@ -6,21 +6,29 @@
 
 <h1>Zarejestruj się</h1>
 
+<p>Dołącz do naszej finansowej rewolucji! Rejestracja zajmie Ci mniej czasu niż wyliczenie reszty w sklepie 😉.</p>
+
 <form method="post">
     <div class="form-group">
         <label asp-for="Input.Email"></label>
-        <input asp-for="Input.Email" class="form-control" />
+        <input asp-for="Input.Email" class="form-control" placeholder="Twój magiczny adres e-mail" />
         <span asp-validation-for="Input.Email" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="Input.Password"></label>
-        <input asp-for="Input.Password" class="form-control" />
+        <input asp-for="Input.Password" class="form-control" type="password" placeholder="Stwórz hasło godne skarbca" />
         <span asp-validation-for="Input.Password" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="Input.ConfirmPassword"></label>
-        <input asp-for="Input.ConfirmPassword" class="form-control" />
+        <input asp-for="Input.ConfirmPassword" class="form-control" type="password" placeholder="Potwierdź swoje hasło" />
         <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
     </div>
-    <button type="submit" class="btn btn-primary">Zarejestruj się</button>
+    <button type="submit" class="btn btn-primary">Zostań finansowym mistrzem</button>
 </form>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+}
