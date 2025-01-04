@@ -9,16 +9,26 @@ using SystemZarzadzaniaFinansami.Models;
 
 namespace SystemZarzadzaniaFinansami.Controllers
 {
+    /// <summary>
+    /// Kontroler zarządzający przychodami użytkownika.
+    /// </summary>
     public class IncomesController : Controller
     {
         private readonly ApplicationDbContext _context;
 
+        /// <summary>
+        /// Inicjalizuje nową instancję kontrolera IncomesController.
+        /// </summary>
+        /// <param name="context">Kontekst bazy danych.</param>
         public IncomesController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Incomes
+        /// <summary>
+        /// Wyświetla listę przychodów dla zalogowanego użytkownika.
+        /// </summary>
+        /// <returns>Widok z listą przychodów.</returns>
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -34,7 +44,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(await incomes.ToListAsync());
         }
 
-        // GET: Incomes/Details/5
+        /// <summary>
+        /// Wyświetla szczegóły wybranego przychodu.
+        /// </summary>
+        /// <param name="id">Identyfikator przychodu.</param>
+        /// <returns>Widok szczegółów przychodu.</returns>
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -60,7 +74,10 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(income);
         }
 
-        // GET: Incomes/Create
+        /// <summary>
+        /// Wyświetla formularz do utworzenia nowego przychodu.
+        /// </summary>
+        /// <returns>Widok formularza tworzenia przychodu.</returns>
         public IActionResult Create()
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -80,10 +97,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View();
         }
 
-
-
-
-        // POST: Incomes/Create
+        /// <summary>
+        /// Przetwarza dane przesłane przez formularz tworzenia przychodu.
+        /// </summary>
+        /// <param name="income">Model przychodu przesłany przez formularz.</param>
+        /// <returns>Widok z listą przychodów lub formularz w przypadku błędów.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Amount,Date,CategoryId,UserId")] Income income)
@@ -112,7 +130,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(income);
         }
 
-        // GET: Incomes/Edit/5
+        /// <summary>
+        /// Wyświetla formularz edycji istniejącego przychodu.
+        /// </summary>
+        /// <param name="id">Identyfikator przychodu.</param>
+        /// <returns>Widok formularza edycji przychodu.</returns>
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -141,7 +163,12 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(income);
         }
 
-        // POST: Incomes/Edit/5
+        /// <summary>
+        /// Przetwarza dane przesłane przez formularz edycji przychodu.
+        /// </summary>
+        /// <param name="id">Identyfikator przychodu.</param>
+        /// <param name="income">Model przychodu przesłany przez formularz.</param>
+        /// <returns>Widok z listą przychodów lub formularz w przypadku błędów.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Amount,Date,CategoryId,UserId")] Income income)
@@ -189,7 +216,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(income);
         }
 
-        // GET: Incomes/Delete/5
+        /// <summary>
+        /// Wyświetla formularz usunięcia przychodu.
+        /// </summary>
+        /// <param name="id">Identyfikator przychodu.</param>
+        /// <returns>Widok formularza usunięcia przychodu.</returns>
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -215,7 +246,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(income);
         }
 
-        // POST: Incomes/Delete/5
+        /// <summary>
+        /// Przetwarza potwierdzenie usunięcia przychodu.
+        /// </summary>
+        /// <param name="id">Identyfikator przychodu.</param>
+        /// <returns>Przekierowanie do listy przychodów.</returns>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -236,6 +271,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Sprawdza, czy przychód istnieje w bazie danych.
+        /// </summary>
+        /// <param name="id">Identyfikator przychodu.</param>
+        /// <returns>True, jeśli przychód istnieje; w przeciwnym razie false.</returns>
         private bool IncomeExists(int id)
         {
             return _context.Incomes.Any(i => i.Id == id);

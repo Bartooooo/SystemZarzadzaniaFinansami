@@ -17,6 +17,9 @@ using Microsoft.Extensions.Logging;
 
 namespace SystemZarzadzaniaFinansami.Areas.Identity.Pages.Account
 {
+    /// <summary>
+    /// Model strony rejestracji użytkownika. Obsługuje proces tworzenia nowego konta.
+    /// </summary>
     public class RegisterModel : PageModel
     {
         private readonly SignInManager<IdentityUser> _signInManager;
@@ -26,6 +29,14 @@ namespace SystemZarzadzaniaFinansami.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
 
+        /// <summary>
+        /// Konstruktor modelu rejestracji, który inicjalizuje menedżera użytkowników i inne usługi.
+        /// </summary>
+        /// <param name="userManager">Menedżer użytkowników do zarządzania procesem rejestracji.</param>
+        /// <param name="userStore">Przechowuje dane o użytkownikach w bazie danych.</param>
+        /// <param name="signInManager">Menedżer logowania użytkowników.</param>
+        /// <param name="logger">Logger do rejestrowania działań związanych z rejestracją.</param>
+        /// <param name="emailSender">Serwis wysyłania e-maili (np. do potwierdzenia e-maila).</param>
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
@@ -41,43 +52,75 @@ namespace SystemZarzadzaniaFinansami.Areas.Identity.Pages.Account
             _emailSender = emailSender;
         }
 
+        /// <summary>
+        /// Właściwość, która przechowuje dane wejściowe użytkownika podczas rejestracji (e-mail, hasło).
+        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
+        /// <summary>
+        /// Adres URL, na który użytkownik zostanie przekierowany po zakończeniu rejestracji.
+        /// </summary>
         public string ReturnUrl { get; set; }
 
+        /// <summary>
+        /// Lista dostępnych zewnętrznych metod logowania (np. Google, Facebook).
+        /// </summary>
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
+        /// <summary>
+        /// Model danych wejściowych do formularza rejestracji.
+        /// </summary>
         public class InputModel
         {
+            /// <summary>
+            /// Adres e-mail użytkownika.
+            /// </summary>
             [Required(ErrorMessage = "Adres e-mail jest wymagany.")]
             [EmailAddress(ErrorMessage = "Nieprawidłowy format adresu e-mail.")]
             [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Wprowadź poprawny adres e-mail (np. test@test.pl).")]
             [Display(Name = "Email")]
             public string Email { get; set; }
 
+            /// <summary>
+            /// Hasło użytkownika.
+            /// </summary>
             [Required(ErrorMessage = "Hasło jest wymagane.")]
             [StringLength(100, ErrorMessage = "Hasło musi mieć co najmniej {2} i maksymalnie {1} znaków.", MinimumLength = 6)]
             [DataType(DataType.Password)]
             [Display(Name = "Hasło")]
             public string Password { get; set; }
 
+            /// <summary>
+            /// Potwierdzenie hasła w procesie rejestracji.
+            /// </summary>
             [DataType(DataType.Password)]
             [Display(Name = "Potwierdź hasło")]
             [Compare("Password", ErrorMessage = "Hasło i potwierdzenie hasła muszą się zgadzać.")]
             public string ConfirmPassword { get; set; }
         }
 
+        /// <summary>
+        /// Inicjuje dane do formularza rejestracji, w tym dostępne zewnętrzne metody logowania.
+        /// </summary>
+        /// <param name="returnUrl">Adres URL, na który użytkownik powinien zostać przekierowany po udanym logowaniu.</param>
+        /// <returns>Wynik operacji asynchronicznej.</returns>
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
+        /// <summary>
+        /// Obsługuje proces rejestracji użytkownika na stronie. Po pomyślnej rejestracji użytkownik otrzymuje e-mail z linkiem potwierdzającym.
+        /// </summary>
+        /// <param name="returnUrl">Adres URL, na który użytkownik zostanie przekierowany po udanym logowaniu.</param>
+        /// <returns>Wynik operacji asynchronicznej.</returns>
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
@@ -112,6 +155,7 @@ namespace SystemZarzadzaniaFinansami.Areas.Identity.Pages.Account
                         return LocalRedirect(returnUrl);
                     }
                 }
+
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
@@ -121,6 +165,10 @@ namespace SystemZarzadzaniaFinansami.Areas.Identity.Pages.Account
             return Page();
         }
 
+        /// <summary>
+        /// Tworzy nowego użytkownika na podstawie danych wejściowych.
+        /// </summary>
+        /// <returns>Nowo utworzony obiekt użytkownika.</returns>
         private IdentityUser CreateUser()
         {
             try
@@ -130,11 +178,14 @@ namespace SystemZarzadzaniaFinansami.Areas.Identity.Pages.Account
             catch
             {
                 throw new InvalidOperationException($"Can't create an instance of '{nameof(IdentityUser)}'. " +
-                    $"Ensure that '{nameof(IdentityUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
-                    $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
+                    $"Ensure that '{nameof(IdentityUser)}' is not an abstract class and has a parameterless constructor.");
             }
         }
 
+        /// <summary>
+        /// Zwraca instancję użytkownika, który obsługuje operacje e-mailowe.
+        /// </summary>
+        /// <returns>Instancja użytkownika obsługująca operacje e-mailowe.</returns>
         private IUserEmailStore<IdentityUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)

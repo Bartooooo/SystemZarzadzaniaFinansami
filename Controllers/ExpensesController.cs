@@ -9,16 +9,26 @@ using SystemZarzadzaniaFinansami.Models;
 
 namespace SystemZarzadzaniaFinansami.Controllers
 {
+    /// <summary>
+    /// Kontroler do zarządzania wydatkami użytkownika.
+    /// </summary>
     public class ExpensesController : Controller
     {
         private readonly ApplicationDbContext _context;
 
+        /// <summary>
+        /// Inicjalizuje nową instancję kontrolera ExpensesController.
+        /// </summary>
+        /// <param name="context">Kontekst bazy danych.</param>
         public ExpensesController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Expenses
+        /// <summary>
+        /// Wyświetla listę wydatków dla zalogowanego użytkownika.
+        /// </summary>
+        /// <returns>Widok z listą wydatków.</returns>
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -34,7 +44,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(await expenses.ToListAsync());
         }
 
-        // GET: Expenses/Details/5
+        /// <summary>
+        /// Wyświetla szczegóły wybranego wydatku.
+        /// </summary>
+        /// <param name="id">Identyfikator wydatku.</param>
+        /// <returns>Widok szczegółów wydatku.</returns>
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -60,7 +74,10 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(expense);
         }
 
-        // GET: Expenses/Create
+        /// <summary>
+        /// Wyświetla formularz do tworzenia nowego wydatku.
+        /// </summary>
+        /// <returns>Widok formularza tworzenia wydatku.</returns>
         public IActionResult Create()
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -80,7 +97,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View();
         }
 
-        // POST: Expenses/Create
+        /// <summary>
+        /// Przetwarza dane przesłane przez formularz tworzenia wydatku.
+        /// </summary>
+        /// <param name="expense">Model wydatku przesłany przez formularz.</param>
+        /// <returns>Widok z listą wydatków lub formularz w przypadku błędów.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Amount,Date,CategoryId,UserId")] Expense expense)
@@ -109,7 +130,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(expense);
         }
 
-        // GET: Expenses/Edit/5
+        /// <summary>
+        /// Wyświetla formularz edycji istniejącego wydatku.
+        /// </summary>
+        /// <param name="id">Identyfikator wydatku.</param>
+        /// <returns>Widok formularza edycji wydatku.</returns>
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -138,7 +163,12 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(expense);
         }
 
-        // POST: Expenses/Edit/5
+        /// <summary>
+        /// Przetwarza dane przesłane przez formularz edycji wydatku.
+        /// </summary>
+        /// <param name="id">Identyfikator wydatku.</param>
+        /// <param name="expense">Model wydatku przesłany przez formularz.</param>
+        /// <returns>Widok z listą wydatków lub formularz w przypadku błędów.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Amount,Date,CategoryId,UserId")] Expense expense)
@@ -186,7 +216,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(expense);
         }
 
-        // GET: Expenses/Delete/5
+        /// <summary>
+        /// Wyświetla formularz usunięcia wydatku.
+        /// </summary>
+        /// <param name="id">Identyfikator wydatku.</param>
+        /// <returns>Widok formularza usunięcia wydatku.</returns>
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -212,7 +246,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(expense);
         }
 
-        // POST: Expenses/Delete/5
+        /// <summary>
+        /// Przetwarza potwierdzenie usunięcia wydatku.
+        /// </summary>
+        /// <param name="id">Identyfikator wydatku.</param>
+        /// <returns>Przekierowanie do listy wydatków.</returns>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -233,6 +271,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Sprawdza, czy dany wydatek istnieje w bazie danych.
+        /// </summary>
+        /// <param name="id">Identyfikator wydatku.</param>
+        /// <returns>True, jeśli wydatek istnieje; w przeciwnym razie false.</returns>
         private bool ExpenseExists(int id)
         {
             return _context.Expenses.Any(e => e.Id == id);

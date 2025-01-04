@@ -13,17 +13,27 @@ using System.IO;
 
 namespace SystemZarzadzaniaFinansami.Controllers
 {
+    /// <summary>
+    /// Kontroler zarządzający generowaniem raportów finansowych i wykresów.
+    /// </summary>
     [Authorize]
     public class ReportsController : Controller
     {
         private readonly ApplicationDbContext _context;
 
+        /// <summary>
+        /// Inicjalizuje nową instancję kontrolera ReportsController.
+        /// </summary>
+        /// <param name="context">Kontekst bazy danych.</param>
         public ReportsController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Reports/Index
+        /// <summary>
+        /// Wyświetla stronę główną raportów, umożliwiając wybór parametrów raportu.
+        /// </summary>
+        /// <returns>Widok strony głównej raportów.</returns>
         public IActionResult Index()
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -33,14 +43,21 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return Unauthorized();
             }
 
-            // Pobierz tylko kategorie użytkownika
+            // Pobierz kategorie użytkownika
             var categories = _context.Categories.Where(c => c.UserId == userId).ToList();
             ViewBag.Categories = categories;
 
             return View("~/Views/Reports1/Index.cshtml");
         }
 
-        // POST: Reports/GenerateReport
+        /// <summary>
+        /// Generuje raport finansowy na podstawie podanych parametrów.
+        /// </summary>
+        /// <param name="startDate">Data początkowa zakresu raportu.</param>
+        /// <param name="endDate">Data końcowa zakresu raportu.</param>
+        /// <param name="reportType">Typ raportu: "incomes", "expenses" lub "all".</param>
+        /// <param name="categoryId">Identyfikator kategorii (opcjonalnie).</param>
+        /// <returns>Widok raportu finansowego.</returns>
         [HttpPost]
         public async Task<IActionResult> GenerateReport(DateTime? startDate, DateTime? endDate, string reportType, int? categoryId)
         {
@@ -51,6 +68,7 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return Unauthorized();
             }
 
+            // Walidacja dat
             if (!startDate.HasValue)
             {
                 startDate = DateTime.Now.AddDays(-30); // Ostatnie 30 dni
@@ -136,11 +154,16 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View("~/Views/Reports1/Report.cshtml", report);
         }
 
-        // GET: Reports/GenerateBarChart
+        /// <summary>
+        /// Generuje wykres słupkowy przedstawiający przychody i wydatki.
+        /// </summary>
+        /// <param name="incomeTotal">Całkowita suma przychodów.</param>
+        /// <param name="expenseTotal">Całkowita suma wydatków.</param>
+        /// <returns>Plik obrazu PNG z wykresem słupkowym.</returns>
         [HttpGet]
         public IActionResult GenerateBarChart(decimal incomeTotal, decimal expenseTotal)
         {
-            using (var bitmap = new Bitmap(600, 450)) // Zwiększenie wysokości obrazu
+            using (var bitmap = new Bitmap(600, 450))
             using (var graphics = Graphics.FromImage(bitmap))
             {
                 graphics.Clear(Color.White);
@@ -165,19 +188,9 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 graphics.DrawString($"Przychody: {incomeTotal} zł", new Font("Arial", 12), Brushes.Black, 100, 400 - incomeHeight - 20);
                 graphics.DrawString($"Wydatki: {expenseTotal} zł", new Font("Arial", 12), Brushes.Black, 100 + barSpacing, 400 - expenseHeight - 20);
 
-                // Oś X
-                graphics.DrawLine(Pens.Black, 50, 400, 550, 400); // Linia osi X
-                graphics.DrawString("Przychody", new Font("Arial", 12), Brushes.Black, 100 + (barWidth / 2) - 30, 410); // Przesunięcie etykiety w dół
-                graphics.DrawString("Wydatki", new Font("Arial", 12), Brushes.Black, 100 + barSpacing + (barWidth / 2) - 30, 410); // Przesunięcie etykiety w dół
-
-                // Oś Y
-                graphics.DrawLine(Pens.Black, 50, 50, 50, 400); // Linia osi Y
-                for (int i = 0; i <= maxValue; i += (int)Math.Ceiling(maxValue / 5))
-                {
-                    var y = 400 - (int)((i / maxValue) * 300);
-                    graphics.DrawString(i.ToString(), new Font("Arial", 10), Brushes.Black, 10, y - 5);
-                    graphics.DrawLine(Pens.Gray, 50, y, 550, y); // Siatka osi Y
-                }
+                // Oś X i Y
+                graphics.DrawLine(Pens.Black, 50, 400, 550, 400);
+                graphics.DrawLine(Pens.Black, 50, 50, 50, 400);
 
                 using (var stream = new MemoryStream())
                 {
@@ -186,6 +199,5 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 }
             }
         }
-
     }
 }

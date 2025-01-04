@@ -12,16 +12,27 @@ using SystemZarzadzaniaFinansami.Data;
 
 namespace SystemZarzadzaniaFinansami.Controllers
 {
+    /// <summary>
+    /// Kontroler zarz¹dzaj¹cy widokiem g³ównym aplikacji.
+    /// </summary>
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;
 
+        /// <summary>
+        /// Inicjalizuje now¹ instancjê kontrolera HomeController.
+        /// </summary>
+        /// <param name="context">Kontekst bazy danych.</param>
         public HomeController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Home/Index
+        /// <summary>
+        /// Wyœwietla g³ówny widok aplikacji. 
+        /// Dla zalogowanego u¿ytkownika wyœwietla podsumowanie finansowe bie¿¹cego miesi¹ca.
+        /// </summary>
+        /// <returns>Widok g³ówny aplikacji.</returns>
         public async Task<IActionResult> Index()
         {
             if (User.Identity.IsAuthenticated)
@@ -36,17 +47,16 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 var currentMonth = DateTime.Now.Month;
                 var currentYear = DateTime.Now.Year;
 
-                // Przychody za aktualny miesi¹c
+                // Pobranie przychodów i wydatków dla bie¿¹cego miesi¹ca
                 var incomes = await _context.Incomes
                     .Where(i => i.UserId == userId && i.Date.Month == currentMonth && i.Date.Year == currentYear)
                     .SumAsync(i => i.Amount);
 
-                // Wydatki za aktualny miesi¹c
                 var expenses = await _context.Expenses
                     .Where(e => e.UserId == userId && e.Date.Month == currentMonth && e.Date.Year == currentYear)
                     .SumAsync(e => e.Amount);
 
-                // Bilans
+                // Obliczenie bilansu
                 var balance = incomes - expenses;
 
                 var summary = new
@@ -65,13 +75,19 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View("Guest");
         }
 
-        // GET: Home/Guest
+        /// <summary>
+        /// Wyœwietla widok dla niezalogowanych u¿ytkowników.
+        /// </summary>
+        /// <returns>Widok strony dla goœci.</returns>
         public IActionResult Guest()
         {
             return View();
         }
 
-        // GET: Home/GenerateChart
+        /// <summary>
+        /// Generuje wykres s³upkowy przedstawiaj¹cy przychody i wydatki za bie¿¹cy miesi¹c.
+        /// </summary>
+        /// <returns>Plik obrazu PNG z wykresem s³upkowym.</returns>
         [Authorize]
         public IActionResult GenerateChart()
         {
@@ -85,6 +101,7 @@ namespace SystemZarzadzaniaFinansami.Controllers
             var currentMonth = DateTime.Now.Month;
             var currentYear = DateTime.Now.Year;
 
+            // Pobranie przychodów i wydatków
             var incomes = _context.Incomes
                 .Where(i => i.UserId == userId && i.Date.Month == currentMonth && i.Date.Year == currentYear)
                 .Sum(i => i.Amount);
@@ -98,6 +115,7 @@ namespace SystemZarzadzaniaFinansami.Controllers
             {
                 graphics.Clear(Color.White);
 
+                // Obliczenie wysokoœci s³upków i skali
                 var maxValue = Math.Max(incomes, expenses);
                 var step = 500;
                 var adjustedMaxValue = maxValue > 0 ? Math.Ceiling((decimal)maxValue / step) * step : step;

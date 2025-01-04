@@ -9,17 +9,27 @@ using SystemZarzadzaniaFinansami.Models;
 
 namespace SystemZarzadzaniaFinansami.Controllers
 {
+    /// <summary>
+    /// Kontroler do zarządzania kategoriami użytkownika.
+    /// </summary>
     [Authorize]
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;
 
+        /// <summary>
+        /// Inicjalizuje instancję kontrolera CategoriesController.
+        /// </summary>
+        /// <param name="context">Kontekst bazy danych.</param>
         public CategoriesController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Categories
+        /// <summary>
+        /// Wyświetla listę kategorii dla zalogowanego użytkownika.
+        /// </summary>
+        /// <returns>Widok z listą kategorii.</returns>
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -32,7 +42,11 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(await categories.ToListAsync());
         }
 
-        // GET: Categories/Details/5
+        /// <summary>
+        /// Wyświetla szczegóły wybranej kategorii.
+        /// </summary>
+        /// <param name="id">Identyfikator kategorii.</param>
+        /// <returns>Widok szczegółów kategorii.</returns>
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -56,56 +70,55 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View(category);
         }
 
-        // GET: Categories/Create
+        /// <summary>
+        /// Wyświetla formularz do utworzenia nowej kategorii.
+        /// </summary>
+        /// <returns>Widok formularza tworzenia kategorii.</returns>
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Categories/Create
+        /// <summary>
+        /// Przetwarza dane przesłane przez formularz tworzenia kategorii.
+        /// </summary>
+        /// <param name="category">Model kategorii z formularza.</param>
+        /// <returns>Widok z listą kategorii lub formularz w przypadku błędów.</returns>
         [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
-{
-    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-    if (string.IsNullOrEmpty(userId))
-    {
-        return Unauthorized();
-    }
-
-    category.UserId = userId; // Przypisanie wartości UserId
-    ModelState.Remove("UserId"); // Usunięcie walidacji pola UserId
-
-    if (ModelState.IsValid)
-    {
-        try
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
         {
-            _context.Add(category);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            category.UserId = userId; // Przypisanie wartości UserId
+            ModelState.Remove("UserId"); // Usunięcie walidacji pola UserId
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Add(category);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Błąd podczas zapisu do bazy danych: {ex.Message}");
+                    ModelState.AddModelError("", "Nie można dodać kategorii. Spróbuj ponownie.");
+                }
+            }
+            return View(category);
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Błąd podczas zapisu do bazy danych: {ex.Message}");
-            ModelState.AddModelError("", "Nie można dodać kategorii. Spróbuj ponownie.");
-        }
-    }
-    else
-    {
-        Console.WriteLine("ModelState jest niepoprawny.");
-        foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-        {
-            Console.WriteLine($"Błąd walidacji: {error.ErrorMessage}");
-        }
-    }
 
-    return View(category);
-}
-
-
-
-
-        // GET: Categories/Edit/5
+        /// <summary>
+        /// Wyświetla formularz edycji istniejącej kategorii.
+        /// </summary>
+        /// <param name="id">Identyfikator kategorii.</param>
+        /// <returns>Widok formularza edycji kategorii.</returns>
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -127,7 +140,12 @@ public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
             return View(category);
         }
 
-        // POST: Categories/Edit/5
+        /// <summary>
+        /// Przetwarza dane przesłane przez formularz edycji kategorii.
+        /// </summary>
+        /// <param name="id">Identyfikator kategorii.</param>
+        /// <param name="category">Model kategorii z formularza.</param>
+        /// <returns>Widok z listą kategorii lub formularz w przypadku błędów.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category category)
@@ -168,7 +186,11 @@ public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
             return View(category);
         }
 
-        // GET: Categories/Delete/5
+        /// <summary>
+        /// Wyświetla formularz usunięcia kategorii.
+        /// </summary>
+        /// <param name="id">Identyfikator kategorii.</param>
+        /// <returns>Widok formularza usunięcia kategorii.</returns>
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -192,7 +214,11 @@ public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
             return View(category);
         }
 
-        // POST: Categories/Delete/5
+        /// <summary>
+        /// Przetwarza potwierdzenie usunięcia kategorii.
+        /// </summary>
+        /// <param name="id">Identyfikator kategorii.</param>
+        /// <returns>Przekierowanie do listy kategorii.</returns>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -213,6 +239,11 @@ public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Sprawdza, czy kategoria istnieje w bazie danych.
+        /// </summary>
+        /// <param name="id">Identyfikator kategorii.</param>
+        /// <returns>True, jeśli kategoria istnieje; w przeciwnym razie false.</returns>
         private bool CategoryExists(int id)
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
