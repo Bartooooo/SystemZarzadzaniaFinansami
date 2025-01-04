@@ -54,13 +54,6 @@
     <h2>Wykres przychodów i wydatków miesiąca</h2>
     <img src="@Url.Action("GenerateChart", "Home")" alt="Wykres finansowy" />
 }
-else
-{
-    <p>
-        Aby korzystać z funkcji zarządzania finansami, musisz być zalogowany.
-        <a href="/Identity/Account/Login" class="btn btn-primary">Zaloguj się</a>
-    </p>
-}
 
 @section Styles {
     <style>

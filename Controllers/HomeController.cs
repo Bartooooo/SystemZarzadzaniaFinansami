@@ -65,6 +65,12 @@ namespace SystemZarzadzaniaFinansami.Controllers
             return View("Guest");
         }
 
+        // GET: Home/Guest
+        public IActionResult Guest()
+        {
+            return View();
+        }
+
         // GET: Home/GenerateChart
         [Authorize]
         public IActionResult GenerateChart()
@@ -94,7 +100,7 @@ namespace SystemZarzadzaniaFinansami.Controllers
 
                 var maxValue = Math.Max(incomes, expenses);
                 var step = 500;
-                var adjustedMaxValue = maxValue > 0 ? Math.Ceiling((decimal)maxValue / step) * step : step; // Jeœli maxValue = 0, ustaw krok jako 500
+                var adjustedMaxValue = maxValue > 0 ? Math.Ceiling((decimal)maxValue / step) * step : step;
 
                 var barWidth = 100;
                 var barSpacing = 200;
@@ -124,7 +130,7 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 for (int i = 0; i <= adjustedMaxValue; i += step)
                 {
                     var y = 400 - (int)((i / (double)adjustedMaxValue) * 300);
-                    if (y < 50 || y > 400) continue; // Zabezpieczenie przed wartoœci¹ wykraczaj¹c¹ poza zakres
+                    if (y < 50 || y > 400) continue;
 
                     graphics.DrawString(i.ToString(), new Font("Arial", 10), Brushes.Black, 10, y - 5);
                     graphics.DrawLine(Pens.Gray, 50, y, 550, y);
@@ -137,6 +143,5 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 }
             }
         }
-
     }
 }
