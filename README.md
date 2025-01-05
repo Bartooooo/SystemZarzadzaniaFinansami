@@ -91,7 +91,7 @@ Aplikacja webowa umo¿liwia u¿ytkownikom œledzenie swoich finansów poprzez dodawa
 #### Zarz¹dzanie Przychodami i Wydatkami:
 - Tworzenie, edycja, usuwanie, przegl¹d.
 - **Dane walidowane pod k¹tem:**
-  - Kwoty (min. 0.01, max. 10 000 000).
+  - Kwoty (min. 0.01, max. 10 000 000 | Blokada na max. 2 miejsca po przecinku)
   - Daty (wymagana).
   - Kategorii (wymagana)
 #### Zarz¹dzanie Kategoriami:
