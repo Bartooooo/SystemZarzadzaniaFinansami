@@ -275,5 +275,59 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 return BadRequest($"Błąd podczas generowania wykresu: {ex.Message}");
             }
         }
+        /// <summary>
+        /// Eksportuje raport do pliku CSV.
+        /// </summary>
+        /// <param name="startDate">Data początkowa zakresu raportu.</param>
+        /// <param name="endDate">Data końcowa zakresu raportu.</param>
+        /// <param name="reportType">Typ raportu: "incomes", "expenses", "all".</param>
+        /// <returns>Plik CSV zawierający dane raportu.</returns>
+        [HttpGet]
+        public async Task<IActionResult> ExportToCSV(DateTime startDate, DateTime endDate, string reportType)
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            // Walidacja dat
+            if (startDate > endDate)
+            {
+                return BadRequest("Data początkowa nie może być późniejsza niż data końcowa.");
+            }
+
+            // Pobierz dane użytkownika
+            var incomesQuery = _context.Incomes
+                .Include(i => i.Category)
+                .Where(i => i.UserId == userId && i.Date >= startDate && i.Date <= endDate);
+            var expensesQuery = _context.Expenses
+                .Include(e => e.Category)
+                .Where(e => e.UserId == userId && e.Date >= startDate && e.Date <= endDate);
+
+            var incomes = reportType == "expenses" ? new List<Income>() : await incomesQuery.ToListAsync();
+            var expenses = reportType == "incomes" ? new List<Expense>() : await expensesQuery.ToListAsync();
+
+            var csvBuilder = new StringBuilder();
+
+            // Nagłówki CSV
+            csvBuilder.AppendLine("Typ,Kategoria,Kwota,Data");
+
+            // Dodaj przychody do CSV
+            foreach (var income in incomes)
+            {
+                csvBuilder.AppendLine($"Przychód,{income.Category?.Name ?? "Brak kategorii"},{income.Amount.ToString(CultureInfo.InvariantCulture)},{income.Date:yyyy-MM-dd}");
+            }
+
+            // Dodaj wydatki do CSV
+            foreach (var expense in expenses)
+            {
+                csvBuilder.AppendLine($"Wydatek,{expense.Category?.Name ?? "Brak kategorii"},{expense.Amount.ToString(CultureInfo.InvariantCulture)},{expense.Date:yyyy-MM-dd}");
+            }
+
+            var fileName = $"Raport_{reportType}_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}.csv";
+            return File(Encoding.UTF8.GetBytes(csvBuilder.ToString()), "text/csv", fileName);
+        }
     }
 }
