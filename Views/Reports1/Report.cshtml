@@ -147,6 +147,23 @@
             expenseTotal = Model.ExpenseTotal
         })" alt="Wykres słupkowy" />
     </div>
+    <!-- Wykres kołowy dla raportów -->
+    @if (Model.ReportType == "incomes" || Model.ReportType == "all")
+    {
+        <img src="@Url.Action("GeneratePieChart", "Reports", new {
+        categories = Model.IncomeCategories,
+        title = "Przychody - Podział Kategorii"
+    })" alt="Wykres kołowy - Przychody" />
+    }
+    @if (Model.ReportType == "expenses" || Model.ReportType == "all")
+    {
+        <img src="@Url.Action("GeneratePieChart", "Reports", new {
+        categories = Model.ExpenseCategories,
+        title = "Wydatki - Podział Kategorii"
+    })" alt="Wykres kołowy - Wydatki" />
+    }
+
+
 }
 else
 {

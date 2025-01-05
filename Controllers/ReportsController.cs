@@ -131,6 +131,16 @@ namespace SystemZarzadzaniaFinansami.Controllers
             var expenseTotal = expenses.Sum(e => e.Amount);
             var balance = incomeTotal - expenseTotal;
 
+            var incomeCategories = incomes
+                .GroupBy(i => i.Category?.Name ?? "Brak kategorii")
+                .Select(g => new { Category = g.Key, Total = g.Sum(i => i.Amount) })
+                .ToDictionary(x => x.Category, x => x.Total);
+
+            var expenseCategories = expenses
+                .GroupBy(e => e.Category?.Name ?? "Brak kategorii")
+                .Select(g => new { Category = g.Key, Total = g.Sum(e => e.Amount) })
+                .ToDictionary(x => x.Category, x => x.Total);
+
             string reportName = reportType switch
             {
                 "incomes" => "Raport przychody",
@@ -148,7 +158,9 @@ namespace SystemZarzadzaniaFinansami.Controllers
                 Expenses = expenses,
                 IncomeTotal = incomeTotal,
                 ExpenseTotal = expenseTotal,
-                Balance = balance
+                Balance = balance,
+                IncomeCategories = reportType != "expenses" && incomeCategories.Any() ? string.Join(",", incomeCategories.Select(kvp => $"{kvp.Key}={kvp.Value}")) : null,
+                ExpenseCategories = reportType != "incomes" && expenseCategories.Any() ? string.Join(",", expenseCategories.Select(kvp => $"{kvp.Key}={kvp.Value}")) : null
             };
 
             return View("~/Views/Reports1/Report.cshtml", report);
@@ -197,6 +209,70 @@ namespace SystemZarzadzaniaFinansami.Controllers
                     bitmap.Save(stream, ImageFormat.Png);
                     return File(stream.ToArray(), "image/png");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Generuje wykres kołowy przedstawiający podział kategorii w procentach.
+        /// </summary>
+        /// <param name="categories">Lista kategorii w formacie CSV (nazwa1=wartość1,nazwa2=wartość2,...).</param>
+        /// <param name="title">Tytuł wykresu.</param>
+        /// <returns>Plik obrazu PNG z wykresem kołowym.</returns>
+        [HttpGet]
+        public IActionResult GeneratePieChart(string categories, string title)
+        {
+            if (string.IsNullOrEmpty(categories))
+            {
+                return BadRequest("Nie znaleziono danych dla wykresu kołowego.");
+            }
+
+            try
+            {
+                // Parsowanie danych wejściowych
+                var data = categories.Split(',')
+                    .Select(x => x.Split('='))
+                    .Where(pair => pair.Length == 2) // Upewnij się, że każda para ma dokładnie 2 elementy
+                    .ToDictionary(
+                        pair => pair[0],
+                        pair => decimal.Parse(pair[1])
+                    );
+
+                using (var bitmap = new Bitmap(600, 450))
+                using (var graphics = Graphics.FromImage(bitmap))
+                {
+                    graphics.Clear(Color.White);
+
+                    var total = data.Values.Sum();
+                    if (total == 0)
+                    {
+                        total = 1; // Zapobieganie dzieleniu przez zero
+                    }
+
+                    var startAngle = 0f;
+                    var random = new Random();
+                    foreach (var kvp in data)
+                    {
+                        var sweepAngle = (float)(kvp.Value / total * 360);
+                        var color = Color.FromArgb(random.Next(256), random.Next(256), random.Next(256));
+                        graphics.FillPie(new SolidBrush(color), 100, 50, 300, 300, startAngle, sweepAngle);
+                        startAngle += sweepAngle;
+
+                        // Dodanie legendy
+                        graphics.DrawString($"{kvp.Key}: {kvp.Value / total:P1}", new Font("Arial", 10), Brushes.Black, 420, 50 + (int)(startAngle / 360 * 200));
+                    }
+
+                    graphics.DrawString(title, new Font("Arial", 14, FontStyle.Bold), Brushes.Black, 200, 10);
+
+                    using (var stream = new MemoryStream())
+                    {
+                        bitmap.Save(stream, ImageFormat.Png);
+                        return File(stream.ToArray(), "image/png");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Błąd podczas generowania wykresu: {ex.Message}");
             }
         }
     }
