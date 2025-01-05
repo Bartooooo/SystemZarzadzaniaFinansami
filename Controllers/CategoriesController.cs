@@ -152,39 +152,59 @@ namespace SystemZarzadzaniaFinansami.Controllers
         {
             if (id != category.Id)
             {
+                Console.WriteLine($"Błąd: Id z URL ({id}) różni się od Id z modelu ({category.Id}).");
                 return NotFound();
             }
 
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
+                Console.WriteLine("Błąd: Brak UserId.");
                 return Unauthorized();
             }
 
-            category.UserId = userId;
+            // Pobierz istniejącą kategorię
+            var existingCategory = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
+            if (existingCategory == null)
+            {
+                Console.WriteLine($"Błąd: Nie znaleziono kategorii o Id={id} dla UserId={userId}.");
+                return NotFound();
+            }
+
+            Console.WriteLine($"Przed aktualizacją: Id={existingCategory.Id}, Name={existingCategory.Name}, UserId={existingCategory.UserId}");
+
+            // Zaktualizuj tylko nazwę kategorii
+            existingCategory.Name = category.Name;
+
+            // Usuń UserId z ModelState
+            ModelState.Remove("UserId");
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(category);
                     await _context.SaveChangesAsync();
+                    Console.WriteLine("Zapisano zmiany w kategorii.");
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception ex)
                 {
-                    if (!CategoryExists(category.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    Console.WriteLine($"Błąd podczas zapisywania zmian: {ex.Message}");
+                    throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            Console.WriteLine("ModelState jest nieprawidłowy.");
+            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            {
+                Console.WriteLine($"Błąd walidacji: {error.ErrorMessage}");
+            }
+
             return View(category);
         }
+
+
+
 
         /// <summary>
         /// Wyświetla formularz usunięcia kategorii.
